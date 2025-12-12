@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model cart {
+  cart_id   Int         @id @default(autoincrement())
+  user_id   Int
+  users     users       @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  cartitems cartitems[]
+  orders    orders[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model cartitems {
+  cart_item_id Int     @id @default(autoincrement())
+  cart_id      Int
+  product_id   Int
+  quantity     Int
+  cart         cart    @relation(fields: [cart_id], references: [cart_id], onDelete: Cascade, onUpdate: NoAction)
+  product      product @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model category {
+  category_id               Int                         @id @default(autoincrement())
+  category_name             String                      @db.VarChar(100)
+  productcategoryconnection productcategoryconnection[]
+}
+
+model delivery {
+  delivery_id      Int      @id @default(autoincrement())
+  delivery_method  String   @db.VarChar(100)
+  delivery_address String   @db.VarChar(255)
+  order_status     String   @db.VarChar(50)
+  orders           orders[]
+}
+
+model orders {
+  order_id      Int      @id @default(autoincrement())
+  cart_id       Int
+  delivery_date DateTime @db.Date
+  total_price   Decimal  @db.Decimal(10, 2)
+  order_status  String   @db.VarChar(50)
+  delivery_id   Int
+  payment_id    Int
+  cart          cart     @relation(fields: [cart_id], references: [cart_id], onDelete: Cascade, onUpdate: NoAction)
+  delivery      delivery @relation(fields: [delivery_id], references: [delivery_id], onUpdate: NoAction)
+  payment       payment  @relation(fields: [payment_id], references: [payment_id], onUpdate: NoAction)
+}
+
+model payment {
+  payment_id       Int      @id @default(autoincrement())
+  transaction_date DateTime @db.Timestamp(6)
+  payment_method   String   @db.VarChar(100)
+  payment_status   String   @db.VarChar(50)
+  orders           orders[]
+}
+
+model product {
+  product_id                Int                         @id @default(autoincrement())
+  product_name              String                      @db.VarChar(255)
+  info                      String
+  price                     Decimal?                    @db.Decimal(10, 2)
+  cartitems                 cartitems[]
+  productcategoryconnection productcategoryconnection[]
+  review                    review[]
+}
+
+model productcategoryconnection {
+  product_id  Int
+  category_id Int
+  category    category @relation(fields: [category_id], references: [category_id], onDelete: Cascade, onUpdate: NoAction)
+  product     product  @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([product_id, category_id])
+}
+
+model review {
+  review_id      Int      @id @default(autoincrement())
+  review_text    String
+  rating         Int
+  date_creation  DateTime @db.Timestamp(6)
+  redaction_time DateTime @db.Timestamp(6)
+  user_id        Int
+  product_id     Int
+  product        product  @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
+  users          users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model users {
+  user_id      Int      @id @default(autoincrement())
+  name         String   @db.VarChar(50)
+  surname      String   @db.VarChar(50)
+  email        String   @unique @db.VarChar(254)
+  phone_number String?  @unique @db.VarChar(13)
+  address      String   @db.VarChar(255)
+  region       String   @db.VarChar(100)
+  cart         cart[]
+  review       review[]
+}

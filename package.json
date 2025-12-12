@@ -1,0 +1,19 @@
+{
+  "name": "bd-course-work",
+  "version": "1.0.0",
+  "description": "Інтернет магазин.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prisma": "^7.1.0"
+  }
+}
