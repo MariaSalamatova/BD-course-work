@@ -30,7 +30,6 @@ BD-course-work/
 |_src/
   |-app.js
   |-prisma.js
-  |-queries.md
   |-server.js
     |-controllers/
       |-cart.controller.js
