@@ -4,12 +4,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model cart {
   cart_id   Int         @id @default(autoincrement())
   user_id   Int
-  users     users       @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
   cartitems cartitems[]
   orders    orders[]
 }
@@ -87,7 +87,6 @@ model review {
   user_id        Int
   product_id     Int
   product        product  @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction)
-  users          users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model users {
@@ -98,6 +97,4 @@ model users {
   phone_number String?  @unique @db.VarChar(13)
   address      String   @db.VarChar(255)
   region       String   @db.VarChar(100)
-  cart         cart[]
-  review       review[]
 }

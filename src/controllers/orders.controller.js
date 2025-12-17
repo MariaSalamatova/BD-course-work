@@ -1,6 +1,5 @@
 const prisma = require('../prisma');
 
-
 exports.createOrderWithItems = async (req, res) => {
   const {
     user_id,
@@ -165,7 +164,7 @@ exports.deleteCancelledOrder = async (req, res) => {
       });
     });
 
-    res.json({ message: 'Order permanently deleted' });
+    res.json({ message: 'Order permanently deleted (hard delete)' });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

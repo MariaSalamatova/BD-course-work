@@ -2,7 +2,7 @@
   "name": "bd-course-work",
   "version": "1.0.0",
   "description": "Інтернет магазин.",
-  "main": "index.js",
+  "main": "server.js",
   "directories": {
     "doc": "docs",
     "test": "test"
@@ -16,11 +16,12 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "javascript": "^1.0.0",
     "nodemon": "^3.1.11",
-    "prisma": "^7.1.0"
+    "prisma": "^5.22.0"
   },
   "dependencies": {
-    "@prisma/client": "^7.1.0",
+    "@prisma/client": "^5.22.0",
     "aws-ssl-profiles": "^1.1.2",
     "c12": "^3.1.0",
     "chevrotain": "^10.5.0",

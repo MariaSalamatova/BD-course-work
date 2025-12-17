@@ -108,9 +108,6 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 CREATE UNIQUE INDEX "users_phone_number_key" ON "users"("phone_number");
 
 -- AddForeignKey
-ALTER TABLE "cart" ADD CONSTRAINT "cart_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- AddForeignKey
 ALTER TABLE "cartitems" ADD CONSTRAINT "cartitems_cart_id_fkey" FOREIGN KEY ("cart_id") REFERENCES "cart"("cart_id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 -- AddForeignKey
@@ -133,6 +130,3 @@ ALTER TABLE "productcategoryconnection" ADD CONSTRAINT "productcategoryconnectio
 
 -- AddForeignKey
 ALTER TABLE "review" ADD CONSTRAINT "review_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "product"("product_id") ON DELETE CASCADE ON UPDATE NO ACTION;
-
--- AddForeignKey
-ALTER TABLE "review" ADD CONSTRAINT "review_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION;
