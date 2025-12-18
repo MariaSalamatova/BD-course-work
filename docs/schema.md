@@ -124,4 +124,11 @@
 
 
 Зв'язки:
-- Один-до-багатьох з `orders`
+- `cart` -> `cartitems`: один-до-багатьох
+- `cart` -> `orders`: один-до-багатьох
+- `cartitems` -> `product`: багато-до-одного
+- `product` -> `category`: багато-до-багатьох
+- `product` -> `review`: один-до-багатьох
+- `orders` -> `delivery`: багато-до-одного
+- `orders` -> `payment`: багато-до-одного
+- `review` -> `product`: багато-до-одного

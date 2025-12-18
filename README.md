@@ -8,7 +8,7 @@
 
 Мова програмування: JavaScript
 Бібліотека: Prisma
-Фреймворк тестування:
+Фреймворк тестування: Jest
 
 
 ## Структура
@@ -41,4 +41,14 @@ BD-course-work/
       |-delivery.routes.js
       |-orders.routes.js
       |-payment.routes.js
+|
+|_test/
+|
+|_.env
+|
+|_package-lock.json
+|
+|_package.json
+|
+|_README.md
 ```
