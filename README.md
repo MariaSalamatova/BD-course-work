@@ -43,6 +43,14 @@ BD-course-work/
       |-payment.routes.js
 |
 |_test/
+      |-cart.test.js
+      |-deletecanceledorder.test.js
+      |-delivery.test.js
+      |-getuserorder.test.js
+      |-orderstatusupdate.test.js
+      |-orderwithitems.test.js
+      |-payment.test.js
+      |-productsbycategory.test.js
 |
 |_.env
 |
