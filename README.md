@@ -1,4 +1,4 @@
-# BD-course-work
+# KPI lab work-1
 
 Інтернет магазин.
 
@@ -13,7 +13,7 @@
 
 ## Структура
 ```
-BD-course-work/
+kpi-3-labs/
 |
 |-docs/
   |-queries.md
@@ -32,25 +32,25 @@ BD-course-work/
   |-prisma.js
   |-server.js
     |-controllers/
+      |-auth.controller.js
       |-cart.controller.js
       |-delivery.controller.js
       |-orders.controller.js
       |-payment.controller.js
+    |-middleware/
+      |-auth.middleware.js
     |-routes/
+      |-auth.routes.js
       |-cart.routes.js
       |-delivery.routes.js
       |-orders.routes.js
       |-payment.routes.js
 |
-|_test/
-      |-cart.test.js
-      |-deletecanceledorder.test.js
-      |-delivery.test.js
-      |-getuserorder.test.js
-      |-orderstatusupdate.test.js
-      |-orderwithitems.test.js
-      |-payment.test.js
-      |-productsbycategory.test.js
+|_tests/
+   |-unit/
+      |-orders.unit.test.js
+    |-integration/
+      |-orders.integration.test.js
 |
 |_.env
 |

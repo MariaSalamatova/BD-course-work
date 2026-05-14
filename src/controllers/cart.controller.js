@@ -4,6 +4,10 @@ exports.getCart = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
+    if (isNaN(id)) {
+      return res.status(400).json({ message: 'Invalid cart id' });
+    }
+
     const cart = await prisma.cart.findUnique({
       where: { cart_id: id },
       include: {
@@ -19,9 +23,6 @@ exports.getCart = async (req, res) => {
 
     res.json(cart);
   } catch (error) {
-    res.status(500).json({ 
-      message: 'Error fetching cart', 
-      error: error.message 
-    });
+    res.status(500).json({ message: 'Error fetching cart', error: error.message });
   }
 };
