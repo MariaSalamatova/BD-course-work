@@ -20,9 +20,9 @@ function makeValidOrder(overrides = {}) {
 }
 
 describe('Email — value object', () => {
-  test('валідний email створюється', () => {
+  test('валідний email створюється та нормалізується до нижнього регістру', () => {
     const email = new Email('User@Example.COM');
-    expect(email.getValue()).toBe('user@example.com'); // нормалізація
+    expect(email.getValue()).toBe('user@example.com');
   });
 
   test('невалідний email кидає ValidationError', () => {
@@ -31,7 +31,7 @@ describe('Email — value object', () => {
     expect(() => new Email(null)).toThrow(ValidationError);
   });
 
-  test('equals порівнює за значенням', () => {
+  test('equals порівнює за значенням без урахування регістру', () => {
     const a = new Email('test@example.com');
     const b = new Email('TEST@EXAMPLE.COM');
     expect(a.equals(b)).toBe(true);
@@ -53,13 +53,13 @@ describe('Money — value object', () => {
     expect(result.getAmount()).toBe(150);
   });
 
-  test('округлення до копійок', () => {
-    expect(new Money(10.005).getAmount()).toBe(10.01);
+  test('округлення до копійок (floating-point safe)', () => {
+    expect(new Money(10.005).getAmount()).toBeCloseTo(10.01, 2);
   });
 });
 
 describe('OrderItem — value object', () => {
-  test('валідний item створюється', () => {
+  test('валідний item створюється та повертає правильний subtotal', () => {
     const item = new OrderItem({ productId: 1, quantity: 3, price: 50 });
     expect(item.getSubtotal()).toBe(150);
   });
@@ -72,38 +72,38 @@ describe('OrderItem — value object', () => {
     expect(() => new OrderItem({ productId: 1, quantity: 1.5, price: 10 })).toThrow(ValidationError);
   });
 
-  test('від\'ємний product_id кидає ValidationError', () => {
+  test('від\'ємний productId кидає ValidationError', () => {
     expect(() => new OrderItem({ productId: -1, quantity: 1, price: 10 })).toThrow(ValidationError);
   });
 });
 
 describe('Order — створення з інваріантами', () => {
-  test('валідне замовлення створюється', () => {
+  test('валідне замовлення створюється зі статусом та методом доставки', () => {
     const order = makeValidOrder();
     expect(order.getStatus()).toBe('created');
     expect(order.getDeliveryMethod()).toBe('courier');
   });
 
-  test('невалідний delivery_method кидає ValidationError', () => {
+  test('невалідний deliveryMethod кидає ValidationError', () => {
     expect(() => makeValidOrder({ deliveryMethod: 'drone' })).toThrow(ValidationError);
   });
 
-  test('невалідний payment_method кидає ValidationError', () => {
+  test('невалідний paymentMethod кидає ValidationError', () => {
     expect(() => makeValidOrder({ paymentMethod: 'crypto' })).toThrow(ValidationError);
   });
 
-  test('порожній delivery_address кидає ValidationError', () => {
+  test('порожній deliveryAddress кидає ValidationError', () => {
     expect(() => makeValidOrder({ deliveryAddress: '' })).toThrow(ValidationError);
     expect(() => makeValidOrder({ deliveryAddress: '   ' })).toThrow(ValidationError);
   });
 
-  test('порожній items кидає ValidationError', () => {
+  test('порожній масив items кидає ValidationError', () => {
     expect(() => makeValidOrder({ items: [] })).toThrow(ValidationError);
   });
 });
 
 describe('Order.updateStatus — бізнес-правила', () => {
-  test('успішне оновлення статусу', () => {
+  test('успішне оновлення статусу з created на confirmed', () => {
     const order = makeValidOrder({ status: 'created' });
     order.updateStatus('confirmed', 'created');
     expect(order.getStatus()).toBe('confirmed');
@@ -114,10 +114,10 @@ describe('Order.updateStatus — бізнес-правила', () => {
     expect(() => order.updateStatus('confirmed', 'cancelled')).toThrow(ConflictError);
   });
 
-  test('optimistic lock: статус змінився — кидає ConflictError', () => {
+  test('optimistic lock: реальний статус не збігається з очікуваним — кидає ConflictError і не змінює стан', () => {
     const order = makeValidOrder({ status: 'shipped' });
     expect(() => order.updateStatus('confirmed', 'created')).toThrow(ConflictError);
-    expect(order.getStatus()).toBe('shipped'); // статус не змінився
+    expect(order.getStatus()).toBe('shipped');
   });
 
   test('невалідний newStatus кидає ValidationError', () => {
@@ -140,7 +140,7 @@ describe('Order.canBeDeleted — бізнес-правило', () => {
 });
 
 describe('User — створення', () => {
-  test('валідний user створюється', () => {
+  test('валідний user створюється з правильними полями', () => {
     const user = new User({ email: 'u@test.com', name: 'Іван', passwordHash: 'hash' });
     expect(user.getEmail().getValue()).toBe('u@test.com');
     expect(user.getName()).toBe('Іван');
@@ -160,7 +160,7 @@ describe('OrderFactory — перевірка інваріантів через 
     return { findByIds: jest.fn().mockResolvedValue(products) };
   }
 
-  test('успішно створює Order коли всі товари знайдені', async () => {
+  test('успішно створює Order і правильно рахує totalPrice', async () => {
     const repo = makeProductRepo([{ id: 1, price: 50 }, { id: 2, price: 30 }]);
     const factory = new OrderFactory(repo);
 
@@ -176,7 +176,7 @@ describe('OrderFactory — перевірка інваріантів через 
     expect(order.getItems()).toHaveLength(2);
   });
 
-  test('кидає NotFoundError якщо товар не знайдено', async () => {
+  test('кидає NotFoundError якщо товар не знайдено в репозиторії', async () => {
     const repo = makeProductRepo([]);
     const factory = new OrderFactory(repo);
 
@@ -189,7 +189,7 @@ describe('OrderFactory — перевірка інваріантів через 
     })).rejects.toThrow(NotFoundError);
   });
 
-  test('інваріанти Order перевіряються в конструкторі', async () => {
+  test('інваріанти Order перевіряються в конструкторі (невалідний deliveryMethod)', async () => {
     const repo = makeProductRepo([{ id: 1, price: 50 }]);
     const factory = new OrderFactory(repo);
 

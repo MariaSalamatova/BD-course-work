@@ -1,5 +1,5 @@
 {
-  "name": "bd-course-work",
+  "name": "kpi3",
   "version": "1.0.0",
   "description": "Інтернет магазин.",
   "main": "server.js",
@@ -18,6 +18,13 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/src",
+      "<rootDir>/tests"
+    ],
+    "modulePaths": [
+      "<rootDir>/src"
+    ],
     "coveragePathIgnorePatterns": [
       "/node_modules/"
     ],

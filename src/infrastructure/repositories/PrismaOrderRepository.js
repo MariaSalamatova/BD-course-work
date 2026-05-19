@@ -1,4 +1,4 @@
-const { IOrderRepository } = require('../../domain/repositories');
+const { IOrderRepository } = require('../../domain/repositories/repositories.interfaces');
 const OrderMapper = require('../mappers/OrderMapper');
 
 const ORDER_INCLUDE = {

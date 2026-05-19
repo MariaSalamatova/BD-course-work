@@ -1,4 +1,4 @@
-const { NotFoundError, ValidationError } = require('../../domain/errors/domain.errors');
+const { NotFoundError, ValidationError } = require('../../domain/errors/DomainError');
 
 class DeleteOrderUseCase {
   constructor(orderRepository) {
