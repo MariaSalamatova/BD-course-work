@@ -1,113 +1,81 @@
-const CreateOrderCommand = require('../../application/commands/orders/CreateOrderCommand');
-const UpdateOrderStatusCommand = require('../../application/commands/orders/UpdateOrderStatusCommand');
-const DeleteOrderCommand = require('../../application/commands/orders/DeleteOrderCommand');
-const { GetUserOrdersQuery } = require('../../application/queries/orders/GetUserOrdersQuery');
-const { GetProductsByCategoryQuery } = require('../../application/queries/orders/GetProductsByCategoryQuery');
 const { DomainError, ValidationError, NotFoundError, ConflictError } = require('../../domain/errors/DomainError');
+const OrderMapper = require('../../infrastructure/mappers/OrderMapper');
+
+function domainErrorToStatus(error) {
+  if (error instanceof ValidationError) return 400;
+  if (error instanceof NotFoundError) return 404;
+  if (error instanceof ConflictError) return 409;
+  return 500;
+}
 
 class OrdersController {
-  /**
-   * @param {object} handlers
-   * @param {import('../../application/commands/orders/CreateOrderHandler')} handlers.createOrderHandler
-   * @param {import('../../application/commands/orders/UpdateOrderStatusHandler')} handlers.updateOrderStatusHandler
-   * @param {import('../../application/commands/orders/DeleteOrderHandler')} handlers.deleteOrderHandler
-   * @param {import('../../application/queries/orders/GetUserOrdersQuery').GetUserOrdersHandler} handlers.getUserOrdersHandler
-   * @param {import('../../application/queries/orders/GetProductsByCategoryQuery').GetProductsByCategoryHandler} handlers.getProductsByCategoryHandler
-   */
-  constructor({
-    createOrderHandler,
-    updateOrderStatusHandler,
-    deleteOrderHandler,
-    getUserOrdersHandler,
-    getProductsByCategoryHandler,
-  }) {
-    this.createOrderHandler = createOrderHandler;
-    this.updateOrderStatusHandler = updateOrderStatusHandler;
-    this.deleteOrderHandler = deleteOrderHandler;
-    this.getUserOrdersHandler = getUserOrdersHandler;
-    this.getProductsByCategoryHandler = getProductsByCategoryHandler;
+  constructor({ createOrder, updateOrderStatus, deleteOrder, getUserOrders, getProductsByCategory }) {
+    this.createOrder = createOrder;
+    this.updateOrderStatus = updateOrderStatus;
+    this.deleteOrder = deleteOrder;
+    this.getUserOrders = getUserOrders;
+    this.getProductsByCategory = getProductsByCategory;
   }
 
-  async createOrder(req, res) {
+  async create(req, res) {
     try {
-      const command = new CreateOrderCommand({
-        userId: req.user.userId,
-        deliveryMethod: req.body.delivery_method,
-        deliveryAddress: req.body.delivery_address,
-        paymentMethod: req.body.payment_method,
-        items: req.body.items,
+      const order = await this.createOrder.execute({
+        userId: req.user.user_id,
+        ...req.body
       });
-
-      const orderId = await this.createOrderHandler.handle(command);
-      res.status(201).json({ order_id: orderId });
-    } catch (err) {
-      this._handleError(err, res);
+      res.status(201).json(OrderMapper.toResponse(order));
+    } catch (error) {
+      const status = domainErrorToStatus(error);
+      res.status(status).json({ message: error.message });
     }
   }
 
-  async updateOrderStatus(req, res) {
+  async updateStatus(req, res) {
     try {
-      const command = new UpdateOrderStatusCommand({
-        orderId: Number(req.params.id),
-        newStatus: req.body.new_status,
-        currentStatus: req.body.current_status,
+      const order = await this.updateOrderStatus.execute({
+        orderId: Number(req.params.orderId),
+        ...req.body
       });
-
-      await this.updateOrderStatusHandler.handle(command);
-      res.status(204).send();
-    } catch (err) {
-      this._handleError(err, res);
+      res.json(OrderMapper.toResponse(order));
+    } catch (error) {
+      const status = domainErrorToStatus(error);
+      res.status(status).json({ message: error.message });
     }
   }
 
-  async deleteOrder(req, res) {
+  async delete(req, res) {
     try {
-      const command = new DeleteOrderCommand({
-        orderId: Number(req.params.id),
-      });
-
-      await this.deleteOrderHandler.handle(command);
-      res.status(204).send();
-    } catch (err) {
-      this._handleError(err, res);
+      await this.deleteOrder.execute({ orderId: Number(req.params.orderId) });
+      res.json({ message: 'Order permanently deleted (hard delete)' });
+    } catch (error) {
+      const status = domainErrorToStatus(error);
+      res.status(status).json({ message: error.message });
     }
   }
 
-  async getUserOrders(req, res) {
+  async getUserOrdersList(req, res) {
     try {
-      const query = new GetUserOrdersQuery({
-        userId: req.user.userId,
-        page: Number(req.query.page) || 1,
-        limit: Number(req.query.limit) || 10,
+      const { page = 1, limit = 10 } = req.query;
+      const orders = await this.getUserOrders.execute({
+        userId: Number(req.params.userId),
+        page: Number(page),
+        limit: Number(limit)
       });
-
-      const orders = await this.getUserOrdersHandler.handle(query);
-      res.json(orders);
-    } catch (err) {
-      this._handleError(err, res);
+      res.json(orders.map(OrderMapper.toResponse));
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
   }
 
-  async getProductsByCategory(req, res) {
+  async getByCategory(req, res) {
     try {
-      const query = new GetProductsByCategoryQuery({
-        categoryId: Number(req.query.category_id),
+      const products = await this.getProductsByCategory.execute({
+        categoryId: Number(req.params.categoryId)
       });
-
-      const products = await this.getProductsByCategoryHandler.handle(query);
       res.json(products);
-    } catch (err) {
-      this._handleError(err, res);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
     }
-  }
-
-  _handleError(err, res) {
-    if (err instanceof ValidationError) return res.status(400).json({ message: err.message });
-    if (err instanceof NotFoundError)   return res.status(404).json({ message: err.message });
-    if (err instanceof ConflictError)   return res.status(409).json({ message: err.message });
-    if (err instanceof DomainError)     return res.status(422).json({ message: err.message });
-    console.error(err);
-    res.status(500).json({ message: 'Internal server error' });
   }
 }
 
